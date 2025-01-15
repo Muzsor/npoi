@@ -15,17 +15,16 @@
    limitations under the License.
 ==================================================================== */
 
-using NPOI.XSSF.Model;
-using NPOI.OpenXmlFormats.Spreadsheet;
-using NPOI.XSSF.UserModel.Extensions;
-using NUnit.Framework;
-using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.HSSF.Util;
-using NPOI.XSSF.UserModel;
+using NPOI.OpenXmlFormats.Spreadsheet;
+using NPOI.SS.UserModel;
 using NPOI.XSSF;
+using NPOI.XSSF.Model;
+using NPOI.XSSF.UserModel;
+using NPOI.XSSF.UserModel.Extensions;
+using NUnit.Framework;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace TestCases.XSSF.UserModel
 {
@@ -726,8 +725,23 @@ namespace TestCases.XSSF.UserModel
             Assert.IsFalse(cellStyle.IsLocked);
         }
         [Test]
+        public void TestBug738()
+        {
+            XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("738.xlsx");
+
+            ISheet sheet = wb.GetSheet("Sheet1");
+            IRow row = sheet.GetRow(0);
+            ICell cell = row.GetCell(0);
+            Assert.IsTrue(cell.CellStyle.IsLocked);
+            cell.CellStyle.IsLocked = true;
+            Assert.IsTrue(cell.CellStyle.IsLocked);
+            Assert.IsTrue(cell.CellStyle.IsHidden);
+        }
+
+        [Test]
         public void TestGetSetIndent()
         {
+            
             Assert.AreEqual((short)0, cellStyle.Indention);
             cellStyle.Indention = ((short)3);
             Assert.AreEqual((short)3, cellStyle.Indention);
@@ -816,6 +830,7 @@ namespace TestCases.XSSF.UserModel
             Assert.AreEqual(fnt, clone.GetFont());
             Assert.AreEqual(18, clone.DataFormat);
             Assert.AreEqual(2, wb.NumberOfFonts);
+            Assert.AreEqual(clone.GetCoreXf(), wb.GetStylesSource().GetStyleAt(clone.Index).GetCoreXf(), "Should be same CoreXF after cloning");
 
             clone.Alignment = HorizontalAlignment.Left;
             clone.DataFormat = 17;
